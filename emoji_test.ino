@@ -30,34 +30,51 @@ Test OK : Arduino DUE,Arduino mega2560,Arduino UNO Board
   *7. CS     ->    GND  
 */
 
-uint8_t oled_buf[WIDTH * HEIGHT / 8];
 
 void setup() {
-  Serial.begin(9600);
-  Serial.print("OLED Example\n");
-  Wire.begin();
+//  Serial.begin(9600);
+//  Serial.print("OLED Example\n");
+//  Wire.begin();
   
   /* display an image of bitmap matrix */
   er_oled_begin();
-  er_oled_clear(oled_buf);
+//  er_oled_clear(oled_buf);
 
 }
 
 void loop() {
-load_bitmap(0, 0, bmp_l, 72, 40, oled_buf);
-er_oled_display(oled_buf);
-delay(1000);
-
+  for(uint16_t i=0; i < 720; i++){
+      drawBitmap(jingjiu_flash, 0, 0, i, 72, 5);
+  }
 }
 
-void load_bitmap(uint8_t x,uint8_t y,const uint8_t *pBmp, uint8_t chWidth, uint8_t chHeight, uint8_t* buffer)
-{
-  uint8_t i, j, byteWidth = (chWidth + 7)/8;
-  for(j = 0;j < chHeight;j++){
-    for(i = 0;i <chWidth;i++){
-      if(pgm_read_byte(pBmp + j * byteWidth + i / 8) & (128 >> (i & 7))){
-        er_oled_pixel(x + i,y + j, 1, buffer);
-      }
+void setCursorXY(byte X, byte Y){
+  // Y up to down,    unit: 1 page (8 pixels)
+  // X left to right, unit: 1 seg  (1 pixel)
+    command(0x0c + (X & 0x0F));     //set column lower address
+    command(0x11 + ((X>>4)&0x0F));  //set column higher address
+    command(0xB0 + Y);                //set page address 
+}
+
+void drawBitmap(const byte *bitmap, uint8_t X, uint8_t Y, uint16_t bitmap_offset_x, uint8_t w, uint8_t h){
+  setCursorXY(X, Y);
+  for(uint16_t i = 0; i<h; i++) {
+    for (uint16_t j = 0; j< w; j++){
+        uint16_t idx = (bitmap_offset_x+j)%499+499*i;
+        data(pgm_read_byte(&bitmap[idx]));
+//          data(bitmap[idx]);
     }
-  }   
+    setCursorXY(X, ++Y);
+  }
 }
+
+//void load_bitmap(uint16_t x,uint8_t y,const uint8_t *bitmap, uint16_t bitmap_w, uint8_t bitmap_h, uint8_t* buffer)
+//{
+//  for(uint8_t i = 0;i < 5;i++){
+//    for(uint8_t j = 0;j <72;j++){
+////      uint16_t idx = (x+y*x+i*bitmap_w+j)%(bitmap_w*bitmap_h);
+//        uint16_t idx = (x+j)%bitmap_w+bitmap_w*i;
+//        buffer[i*72+j] = pgm_read_byte(&bitmap[idx]);
+//    }
+//  }   
+//}
