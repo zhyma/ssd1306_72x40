@@ -34,7 +34,7 @@ Test OK : Arduino DUE,Arduino mega2560,Arduino UNO Board
 void setup() {
 //  Serial.begin(9600);
 //  Serial.print("OLED Example\n");
-//  Wire.begin();
+  Wire.begin();
   
   /* display an image of bitmap matrix */
   er_oled_begin();
