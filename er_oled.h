@@ -12,26 +12,37 @@ EastRising Technology Co.,LTD
 #define HEIGHT 40
 #define PAGES HEIGHT/8
 
-#define OLED_RST  8 
-//I2C
-#define IIC_CMD        0X00
-#define IIC_RAM        0X40
-#define command(Reg)  I2C_Write_Byte(Reg, IIC_CMD)
-#define data(Data)    I2C_Write_Byte(Data, IIC_RAM)
+#define OLED_ADDRESS      0x3C
+#define OLED_COMMAND_MODE 0x00
+#define OLED_DATA_MODE    0x40
+#define WIDTH  72
+#define HEIGHT 40
 
+
+#define OLED_INIT_LEN   24
+const uint8_t OLED_INIT_CMD[] PROGMEM = {
+  0xAE,//--turn off oled panel
+  0xD5, 0x80,//--set display clock divide ratio/oscillator frequency --set divide ratio
+  0xA8, 0x27,//--set multiplex ratio --1/40 duty
+  0xD3, 0x00,//-set display offset-not offset
+  0xAD, 0x30,//--Internal IREF Setting 
+  0x8D, 0x14,//--set Charge Pump enable/disable--set(0x10) disable
+  0x40,//--set start line address
+  0xA6,//--set normal display
+  0xA4,//Disable Entire Display On
+  0xA1,//--set segment re-map 128 to 0
+  0xC8,//--Set COM Output Scan Direction 64 to 0
+  0xDA, 0x12,//--set com pins hardware configuration
+  0x81, 0x00,//--set contrast control register
+  0xD9, 0x22,//--set pre-charge period
+  0xDB, 0x20//--set vcomh
+};
 
 void er_oled_begin();
-void er_oled_display(uint8_t* buffer);
-void er_oled_clear(uint8_t* buffer);
-void er_oled_pixel(int x,int y,char color, uint8_t* buffer);
-void er_oled_bitmap(uint8_t x,uint8_t y,const uint8_t *pBmp, uint8_t chWidth, uint8_t chHeight, uint8_t* buffer);
-void er_oled_char(unsigned char x, unsigned char y, char acsii, char size, char mode, uint8_t* buffer);
-void er_oled_char1616(uint8_t x,uint8_t y,uint8_t chChar, uint8_t* buffer);
-void er_oled_char3216(uint8_t x, uint8_t y, uint8_t chChar, uint8_t* buffer);
-void er_oled_string(uint8_t x, uint8_t y, const char *pString, uint8_t Size, uint8_t Mode, uint8_t* buffer);
-void I2C_Write_Byte(uint8_t value, uint8_t Cmd);
+void sendCommand(uint8_t cmd);
+void sendData(uint8_t data);
+void drawBitmap(const uint8_t *bitmap, uint8_t X, uint8_t Y, uint16_t bitmap_offset_x, uint8_t w, uint8_t h);
 
-//encoded vertical
 //499x40
 const uint8_t jingjiu_flash[] PROGMEM =
 {
